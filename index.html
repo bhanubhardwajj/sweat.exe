@@ -2,154 +2,547 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SWEAT.EXE — Gym RPG Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SWEAT.EXE</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
 :root{
-  --bg:#0B0B18;--panel:#13132A;--panel2:#1A1A38;
-  --border:#2E2E60;--border2:#4A4A90;
-  --gold:#C8A44A;--gold2:#E8C878;
-  --coral:#D4604A;--teal:#4ABCAA;--purple:#8870C8;
-  --green:#50C870;--text:#CCC8F0;--muted:#7070A0;
+  --bg:#0B0B18;
+  --panel:#13132A;
+  --panel2:#1A1A38;
+  --border:#2E2E60;
+  --border2:#4A4A90;
+  --gold:#C8A44A;
+  --gold2:#E8C878;
+  --coral:#D4604A;
+  --teal:#4ABCAA;
+  --purple:#8870C8;
+  --green:#50C870;
+  --text:#CCC8F0;
+  --muted:#7070A0;
+  --nav-h:60px;
+  --safe-bot: env(safe-area-inset-bottom, 0px);
 }
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:'VT323',monospace;font-size:18px;min-height:100vh;overflow-x:hidden;}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9000;}
-.panel{background:var(--panel);border:2px solid var(--border);position:relative;padding:18px;margin-bottom:14px;}
-.panel::before{content:'';position:absolute;inset:3px;border:1px solid var(--border2);pointer-events:none;opacity:0.4;}
+
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'VT323',monospace;
+  font-size:18px;
+  min-height:100vh;
+  overflow-x:hidden;
+  /* bottom space for fixed nav + safe area */
+  padding-bottom:calc(var(--nav-h) + var(--safe-bot));
+}
+
+/* CRT scanlines */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;
+  z-index:8000;
+}
+
+/* ── PANELS ─────────────────────────────────────────────────── */
+.panel{
+  background:var(--panel);
+  border:2px solid var(--border);
+  position:relative;
+  padding:14px;
+  margin-bottom:12px;
+}
+.panel::before{
+  content:'';
+  position:absolute;
+  inset:3px;
+  border:1px solid var(--border2);
+  pointer-events:none;
+  opacity:0.35;
+}
 .panel-gold{border-color:var(--gold);}
-.panel-gold::before{border-color:var(--gold2);opacity:0.5;}
+.panel-gold::before{border-color:var(--gold2);opacity:0.45;}
 .panel-teal{border-color:var(--teal);}
-.app-header{background:var(--panel);border-bottom:2px solid var(--gold);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
-.app-title{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);letter-spacing:2px;text-shadow:0 0 20px rgba(200,164,74,0.5);}
-.app-title span{color:var(--coral);}
-.header-level{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--teal);text-align:right;line-height:1.8;}
-.nav{display:flex;background:var(--panel);border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none;}
-.nav::-webkit-scrollbar{display:none;}
-.nav-item{font-family:'Press Start 2P',monospace;font-size:8px;padding:14px 16px;color:var(--muted);cursor:pointer;border:none;background:transparent;white-space:nowrap;position:relative;transition:color 0.15s;letter-spacing:0.5px;}
-.nav-item::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--gold);transform:scaleX(0);transition:transform 0.15s;}
-.nav-item:hover{color:var(--text);}
-.nav-item.active{color:var(--gold);}
-.nav-item.active::after{transform:scaleX(1);}
-.page{padding:20px 16px;max-width:860px;margin:0 auto;}
-.px-label{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:block;}
+.panel-teal::before{border-color:var(--teal);opacity:0.3;}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+.app-header{
+  background:var(--panel);
+  border-bottom:2px solid var(--gold);
+  padding:12px 16px;
+  padding-top:calc(12px + env(safe-area-inset-top,0px));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:500;
+}
+.app-title{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(9px,3vw,14px);
+  color:var(--gold);
+  letter-spacing:1px;
+  text-shadow:0 0 18px rgba(200,164,74,0.45);
+  line-height:1.4;
+}
+.app-title .sub{
+  display:block;
+  color:var(--coral);
+  font-size:clamp(7px,2vw,10px);
+  margin-top:2px;
+  letter-spacing:2px;
+}
+.header-right{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(7px,1.8vw,9px);
+  color:var(--teal);
+  text-align:right;
+  line-height:2;
+}
+
+/* ── BOTTOM NAV (mobile first) ─────────────────────────────── */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:calc(var(--nav-h) + var(--safe-bot));
+  background:var(--panel);
+  border-top:2px solid var(--gold);
+  display:flex;
+  align-items:stretch;
+  z-index:600;
+  padding-bottom:var(--safe-bot);
+}
+.bnav-item{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  color:var(--muted);
+  transition:color 0.15s,background 0.15s;
+  position:relative;
+  padding:0 4px;
+  min-height:44px;
+  -webkit-tap-highlight-color:transparent;
+}
+.bnav-item::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--gold);
+  transform:scaleX(0);
+  transition:transform 0.15s;
+}
+.bnav-item.active{color:var(--gold);}
+.bnav-item.active::before{transform:scaleX(1);}
+.bnav-item:active{background:rgba(200,164,74,0.06);}
+.bnav-icon{font-size:20px;line-height:1;}
+.bnav-label{
+  font-family:'Press Start 2P',monospace;
+  font-size:6px;
+  letter-spacing:0.3px;
+  white-space:nowrap;
+}
+
+/* Desktop: top nav instead */
+@media(min-width:640px){
+  body{padding-bottom:0;}
+  .bottom-nav{display:none;}
+  .top-nav{display:flex!important;}
+}
+.top-nav{
+  display:none;
+  background:var(--panel);
+  border-bottom:2px solid var(--border);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.top-nav::-webkit-scrollbar{display:none;}
+.tnav-item{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px;
+  padding:14px 18px;
+  color:var(--muted);
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  white-space:nowrap;
+  position:relative;
+  transition:color 0.15s;
+  letter-spacing:0.5px;
+}
+.tnav-item::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:3px;
+  background:var(--gold);
+  transform:scaleX(0);
+  transition:transform 0.15s;
+}
+.tnav-item:hover{color:var(--text);}
+.tnav-item.active{color:var(--gold);}
+.tnav-item.active::after{transform:scaleX(1);}
+
+/* ── PAGE ───────────────────────────────────────────────────── */
+.page{
+  padding:16px;
+  max-width:860px;
+  margin:0 auto;
+}
+
+/* ── TYPOGRAPHY ─────────────────────────────────────────────── */
+.px-label{
+  font-family:'Press Start 2P',monospace;
+  font-size:8px;
+  color:var(--muted);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+  display:block;
+  line-height:1.8;
+}
 .px-label-gold{color:var(--gold);}
 .px-label-teal{color:var(--teal);}
 .px-label-coral{color:var(--coral);}
+
+.section-title{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(8px,2.5vw,10px);
+  color:var(--gold);
+  letter-spacing:2px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.section-title::before{content:'◆';font-size:7px;color:var(--coral);flex-shrink:0;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);min-width:0;}
+
+/* ── STAT BARS ──────────────────────────────────────────────── */
 .big-stat{font-family:'VT323',monospace;font-size:42px;line-height:1;color:var(--gold2);}
 .big-stat.teal{color:var(--teal);}
 .big-stat.coral{color:var(--coral);}
 .big-stat.green{color:var(--green);}
 .big-stat.purple{color:var(--purple);}
-.bar-wrap{width:100%;background:var(--bg);height:16px;border:1px solid var(--border2);position:relative;overflow:hidden;}
-.bar-fill{height:100%;transition:width 0.6s ease;position:relative;}
-.bar-fill::after{content:'';position:absolute;top:2px;left:2px;right:2px;height:4px;background:rgba(255,255,255,0.15);}
-.bar-hp{background:linear-gradient(90deg,#A02828,var(--coral));}
-.bar-exp{background:linear-gradient(90deg,#204880,var(--teal));}
-.bar-str{background:linear-gradient(90deg,#402080,var(--purple));}
-.stat-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.stat-row .stat-name{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);width:34px;flex-shrink:0;}
-.stat-row .stat-val{font-family:'VT323',monospace;font-size:22px;color:var(--text);width:40px;text-align:right;flex-shrink:0;}
-.stat-row .bar-wrap{flex:1;}
-.char-grid{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;}
-@media(max-width:500px){.char-grid{grid-template-columns:1fr;}}
-.char-avatar{width:100px;height:100px;background:var(--panel2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:52px;flex-shrink:0;position:relative;}
+
+.bar-wrap{width:100%;background:var(--bg);height:14px;border:1px solid var(--border2);position:relative;overflow:hidden;flex-shrink:0;}
+.bar-fill{height:100%;transition:width 0.7s ease;position:relative;}
+.bar-fill::after{content:'';position:absolute;top:2px;left:2px;right:2px;height:3px;background:rgba(255,255,255,0.12);}
+.bar-hp{background:linear-gradient(90deg,#8A2020,var(--coral));}
+.bar-exp{background:linear-gradient(90deg,#1a3a70,var(--teal));}
+.bar-str{background:linear-gradient(90deg,#301860,var(--purple));}
+
+.stat-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.stat-row .stat-name{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);width:30px;flex-shrink:0;}
+.stat-row .stat-val{font-family:'VT323',monospace;font-size:20px;color:var(--text);width:36px;text-align:right;flex-shrink:0;}
+.stat-row .bar-wrap{flex:1;min-width:0;}
+
+/* ── CHARACTER PANEL ────────────────────────────────────────── */
+.char-grid{display:flex;gap:14px;align-items:flex-start;}
+.char-avatar{
+  width:88px;height:88px;min-width:88px;
+  background:var(--panel2);
+  border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;
+  position:relative;
+}
 .char-avatar::after{content:'';position:absolute;inset:4px;border:1px solid var(--border);pointer-events:none;}
-.level-badge{position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);font-family:'Press Start 2P',monospace;font-size:7px;padding:3px 8px;white-space:nowrap;}
-.mission-box{background:var(--panel2);border:2px solid var(--teal);padding:14px 16px;margin-bottom:14px;position:relative;}
-.mission-box::before{content:'► ACTIVE MISSION';position:absolute;top:-9px;left:12px;background:var(--panel);padding:0 8px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--teal);}
-.mission-name{font-family:'VT323',monospace;font-size:28px;color:var(--gold2);margin-bottom:4px;}
-.mission-sub{font-family:'VT323',monospace;font-size:18px;color:var(--muted);}
-.dialog-box{background:var(--panel);border:3px solid var(--gold);padding:16px 20px 16px 52px;position:relative;margin-bottom:20px;}
-.dialog-box::before{content:'';position:absolute;top:3px;left:3px;right:3px;bottom:3px;border:1px solid rgba(200,164,74,0.2);pointer-events:none;}
-.dialog-portrait{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:28px;line-height:1;}
-.dialog-speaker{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--gold);margin-bottom:8px;display:block;}
-.dialog-text{font-family:'VT323',monospace;font-size:20px;color:var(--text);line-height:1.4;}
+.level-badge{
+  position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
+  background:var(--gold);color:var(--bg);
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  padding:3px 7px;white-space:nowrap;
+}
+.char-info{flex:1;min-width:0;}
+.char-status{font-family:'VT323',monospace;font-size:clamp(18px,5vw,24px);color:var(--gold2);margin-bottom:10px;}
+
+/* ── MISSION BOX ────────────────────────────────────────────── */
+.mission-box{
+  background:var(--panel2);border:2px solid var(--teal);
+  padding:14px 14px 14px 14px;margin-bottom:12px;position:relative;
+  margin-top:10px;
+}
+.mission-box::before{
+  content:'► ACTIVE MISSION';
+  position:absolute;top:-9px;left:10px;
+  background:var(--bg);padding:0 8px;
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--teal);
+  white-space:nowrap;
+}
+.mission-name{font-family:'VT323',monospace;font-size:clamp(22px,6vw,28px);color:var(--gold2);margin-bottom:4px;}
+.mission-sub{font-family:'VT323',monospace;font-size:clamp(16px,4.5vw,20px);color:var(--muted);}
+
+/* ── DIALOG / QUOTE ─────────────────────────────────────────── */
+.dialog-box{
+  background:var(--panel);border:3px solid var(--gold);
+  padding:14px 14px 14px 50px;
+  position:relative;margin-bottom:16px;
+}
+.dialog-box::before{content:'';position:absolute;top:3px;left:3px;right:3px;bottom:3px;border:1px solid rgba(200,164,74,0.18);pointer-events:none;}
+.dialog-portrait{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:26px;line-height:1;}
+.dialog-speaker{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.8vw,7px);color:var(--gold);margin-bottom:6px;display:block;}
+.dialog-text{font-family:'VT323',monospace;font-size:clamp(17px,4.5vw,20px);color:var(--text);line-height:1.4;}
 .blink{animation:blink 1s step-end infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-.formation-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px;}
-@media(max-width:480px){.formation-grid{grid-template-columns:repeat(4,1fr);}}
-.day-slot{background:var(--panel2);border:2px solid var(--border);padding:10px 4px;text-align:center;cursor:pointer;transition:border-color 0.15s,background 0.15s;position:relative;}
-.day-slot:hover{border-color:var(--border2);}
+
+/* ── STREAK ─────────────────────────────────────────────────── */
+.streak-banner{
+  background:rgba(200,80,50,0.1);border:2px solid var(--coral);
+  padding:12px 14px;margin-bottom:12px;
+  display:flex;align-items:center;gap:12px;
+}
+.streak-fire{font-size:24px;animation:pulse 1s ease-in-out infinite alternate;flex-shrink:0;}
+@keyframes pulse{from{transform:scale(1);}to{transform:scale(1.15);}}
+.streak-text{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.8vw,8px);color:var(--coral);line-height:2;}
+
+/* ── STATS GRID ─────────────────────────────────────────────── */
+.stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:14px;
+}
+@media(min-width:500px){.stats-grid{grid-template-columns:repeat(4,1fr);}}
+.mini-stat{background:var(--panel2);border:2px solid var(--border);padding:12px 8px;text-align:center;}
+
+/* ── FORMATION GRID ─────────────────────────────────────────── */
+.formation-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-bottom:14px;
+}
+@media(min-width:480px){.formation-grid{grid-template-columns:repeat(7,1fr);}}
+
+.day-slot{
+  background:var(--panel2);border:2px solid var(--border);
+  padding:8px 2px;text-align:center;cursor:pointer;
+  transition:border-color 0.15s,background 0.15s;
+  position:relative;
+  min-height:72px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  -webkit-tap-highlight-color:transparent;
+}
+.day-slot:active{background:rgba(200,164,74,0.08);}
 .day-slot.today{border-color:var(--gold);}
 .day-slot.selected{background:rgba(74,188,170,0.12);border-color:var(--teal);}
-.day-slot.has-split{background:rgba(200,164,74,0.07);}
-.day-slot .slot-day{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);margin-bottom:8px;display:block;}
+.day-slot.has-split{background:rgba(200,164,74,0.06);}
+.slot-day{font-family:'Press Start 2P',monospace;font-size:5px;color:var(--muted);}
 .day-slot.today .slot-day{color:var(--gold);}
-.day-slot .slot-emoji{font-size:22px;display:block;margin:2px 0;}
-.day-slot .slot-name{font-family:'VT323',monospace;font-size:13px;color:var(--muted);margin-top:2px;display:block;}
-.class-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
-.class-chip{background:var(--panel2);border:2px solid var(--border2);padding:8px 12px;cursor:pointer;transition:all 0.1s;display:flex;align-items:center;gap:6px;font-family:'VT323',monospace;font-size:18px;color:var(--text);}
-.class-chip:hover{border-color:var(--gold);color:var(--gold2);}
+.slot-emoji{font-size:20px;line-height:1;}
+.slot-name{font-family:'VT323',monospace;font-size:12px;color:var(--muted);}
+
+/* ── CLASS PICKER ───────────────────────────────────────────── */
+.class-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.class-chip{
+  background:var(--panel2);border:2px solid var(--border2);
+  padding:10px 12px;cursor:pointer;
+  transition:all 0.1s;
+  display:flex;align-items:center;gap:6px;
+  font-family:'VT323',monospace;font-size:18px;color:var(--text);
+  min-height:44px;
+  -webkit-tap-highlight-color:transparent;
+}
+.class-chip:active{border-color:var(--gold);color:var(--gold2);}
 .class-chip.active{border-color:var(--teal);background:rgba(74,188,170,0.1);color:var(--teal);}
-.btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 18px;border:2px solid;cursor:pointer;letter-spacing:0.5px;transition:all 0.1s;position:relative;display:inline-flex;align-items:center;gap:6px;background:transparent;}
-.btn:hover{transform:translateY(-1px);}
-.btn:active{transform:translateY(1px);}
+@media(hover:hover){
+  .class-chip:hover{border-color:var(--gold);color:var(--gold2);}
+}
+
+/* ── BUTTONS ────────────────────────────────────────────────── */
+.btn{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(7px,2vw,9px);
+  padding:13px 16px;
+  border:2px solid;
+  cursor:pointer;
+  letter-spacing:0.5px;
+  transition:all 0.1s;
+  display:inline-flex;align-items:center;gap:6px;
+  background:transparent;
+  min-height:44px;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.btn:active{transform:translateY(1px);opacity:0.85;}
+@media(hover:hover){.btn:hover{transform:translateY(-1px);}}
 .btn-gold{border-color:var(--gold);color:var(--gold);}
-.btn-gold:hover{background:rgba(200,164,74,0.15);}
+@media(hover:hover){.btn-gold:hover{background:rgba(200,164,74,0.15);}}
 .btn-teal{border-color:var(--teal);color:var(--teal);}
-.btn-teal:hover{background:rgba(74,188,170,0.12);}
+@media(hover:hover){.btn-teal:hover{background:rgba(74,188,170,0.12);}}
 .btn-coral{border-color:var(--coral);color:var(--coral);}
-.btn-coral:hover{background:rgba(212,96,74,0.12);}
+@media(hover:hover){.btn-coral:hover{background:rgba(212,96,74,0.12);}}
 .btn-muted{border-color:var(--border2);color:var(--muted);}
-.btn-muted:hover{border-color:var(--text);color:var(--text);}
-.btn-sm{font-size:7px;padding:8px 12px;}
-.encounter{background:var(--panel2);border:2px solid var(--border);border-left:4px solid var(--coral);padding:14px 14px 14px 16px;margin-bottom:12px;position:relative;}
-.encounter:hover{border-left-color:var(--gold);}
-.encounter-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
-.encounter-num{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--coral);width:26px;flex-shrink:0;}
-.encounter-input{flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border2);border-bottom:2px solid var(--gold);color:var(--gold2);font-family:'VT323',monospace;font-size:22px;padding:8px 12px;outline:none;}
+@media(hover:hover){.btn-muted:hover{border-color:var(--text);color:var(--text);}}
+.btn-sm{font-size:clamp(6px,1.6vw,7px);padding:10px 12px;}
+.btn-block{width:100%;justify-content:center;}
+
+/* ── ENCOUNTER BLOCK ────────────────────────────────────────── */
+.encounter{
+  background:var(--panel2);
+  border:2px solid var(--border);
+  border-left:4px solid var(--coral);
+  padding:12px 12px 12px 14px;
+  margin-bottom:10px;
+}
+.encounter-header{
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:10px;flex-wrap:nowrap;
+}
+.encounter-num{
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  color:var(--coral);flex-shrink:0;
+}
+.encounter-input{
+  flex:1;min-width:0;
+  background:var(--bg);
+  border:none;border-bottom:2px solid var(--gold);
+  color:var(--gold2);
+  font-family:'VT323',monospace;font-size:clamp(18px,5vw,22px);
+  padding:8px 8px 6px;outline:none;
+  width:100%;
+}
 .encounter-input::placeholder{color:var(--muted);}
 .encounter-input:focus{border-bottom-color:var(--teal);color:var(--text);}
-.rounds-table{width:100%;border-collapse:collapse;}
-.rounds-table th{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);letter-spacing:0.5px;}
-.rounds-table td{padding:4px 4px;}
-.round-num{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--border2);text-align:center;width:28px;}
-.round-input{width:80px;background:var(--bg);border:1px solid var(--border);border-bottom:2px solid var(--border2);color:var(--teal);font-family:'VT323',monospace;font-size:22px;padding:6px 8px;text-align:center;outline:none;transition:border-color 0.1s;}
+
+/* ── SETS TABLE ─────────────────────────────────────────────── */
+.sets-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px;}
+.rounds-table{border-collapse:collapse;min-width:280px;width:100%;}
+.rounds-table th{
+  font-family:'Press Start 2P',monospace;font-size:6px;color:var(--muted);
+  text-align:left;padding:6px 6px;border-bottom:1px solid var(--border);
+  letter-spacing:0.5px;white-space:nowrap;
+}
+.rounds-table td{padding:3px 3px;}
+.round-num{
+  font-family:'Press Start 2P',monospace;font-size:6px;
+  color:var(--border2);text-align:center;
+  padding-right:4px;white-space:nowrap;
+}
+.round-input{
+  width:72px;
+  background:var(--bg);
+  border:1px solid var(--border);border-bottom:2px solid var(--border2);
+  color:var(--teal);
+  font-family:'VT323',monospace;font-size:22px;
+  padding:6px 6px;text-align:center;outline:none;
+  transition:border-color 0.1s;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+}
 .round-input:focus{border-bottom-color:var(--teal);}
-.round-del{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'VT323',monospace;font-size:18px;padding:4px 8px;cursor:pointer;transition:all 0.1s;}
-.round-del:hover{border-color:var(--coral);color:var(--coral);}
-.vt-input{background:var(--bg);border:1px solid var(--border);border-bottom:2px solid var(--border2);color:var(--text);font-family:'VT323',monospace;font-size:20px;padding:8px 12px;outline:none;width:100%;}
+.round-del{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);font-family:'VT323',monospace;font-size:18px;
+  padding:6px 10px;cursor:pointer;transition:all 0.1s;
+  min-width:36px;min-height:36px;
+  display:flex;align-items:center;justify-content:center;
+}
+.round-del:active{border-color:var(--coral);color:var(--coral);}
+
+/* ── INPUTS ─────────────────────────────────────────────────── */
+.vt-input{
+  background:var(--bg);
+  border:1px solid var(--border);border-bottom:2px solid var(--border2);
+  color:var(--text);font-family:'VT323',monospace;font-size:20px;
+  padding:10px 12px;outline:none;width:100%;
+  -webkit-appearance:none;
+}
 .vt-input:focus{border-bottom-color:var(--gold);}
 .vt-input::placeholder{color:var(--muted);}
-.vt-textarea{background:var(--bg);border:1px solid var(--border);border-bottom:2px solid var(--border2);color:var(--text);font-family:'VT323',monospace;font-size:18px;padding:10px 12px;outline:none;width:100%;resize:vertical;min-height:70px;}
+.vt-textarea{
+  background:var(--bg);
+  border:1px solid var(--border);border-bottom:2px solid var(--border2);
+  color:var(--text);font-family:'VT323',monospace;font-size:18px;
+  padding:10px 12px;outline:none;width:100%;
+  resize:vertical;min-height:72px;
+  -webkit-appearance:none;
+}
 .vt-textarea:focus{border-bottom-color:var(--gold);}
-.quest-entry{margin-bottom:20px;}
-.quest-header{display:flex;align-items:center;justify-content:space-between;background:var(--panel2);border:2px solid var(--border);border-bottom:none;padding:10px 14px;flex-wrap:wrap;gap:8px;}
-.quest-date-text{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--gold);}
-.quest-body{border:2px solid var(--border);padding:12px;background:var(--panel);}
-.quest-exercise{padding:8px 10px;border-left:3px solid var(--border2);margin-bottom:8px;}
-.quest-exercise:last-child{margin-bottom:0;}
-.quest-ex-name{font-family:'VT323',monospace;font-size:22px;color:var(--gold2);margin-bottom:4px;}
-.quest-sets{display:flex;flex-wrap:wrap;gap:6px;}
-.set-tag{background:var(--panel2);border:1px solid var(--border2);padding:3px 10px;font-family:'VT323',monospace;font-size:16px;color:var(--teal);}
-.quest-note{background:rgba(200,164,74,0.06);border-left:3px solid var(--gold);padding:8px 12px;margin-top:8px;font-family:'VT323',monospace;font-size:18px;color:var(--muted);}
-.section-title{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
-.section-title::before{content:'◆';font-size:8px;color:var(--coral);}
-.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
-.mini-stat{background:var(--panel2);border:2px solid var(--border);padding:12px 10px;text-align:center;}
-.split-badge{background:var(--panel2);border:1px solid var(--border2);padding:4px 10px;font-family:'VT323',monospace;font-size:16px;color:var(--teal);display:inline-flex;align-items:center;gap:6px;}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--panel);border:2px solid var(--teal);padding:12px 18px;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--teal);z-index:9999;animation:toastIn 0.25s ease;max-width:280px;line-height:1.6;}
-.toast::before{content:'';position:absolute;inset:3px;border:1px solid rgba(74,188,170,0.2);pointer-events:none;}
-@keyframes toastIn{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.streak-banner{background:rgba(200,100,60,0.1);border:2px solid var(--coral);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
-.streak-fire{font-size:26px;animation:pulse 1s ease-in-out infinite alternate;}
-@keyframes pulse{from{transform:scale(1);}to{transform:scale(1.15);}}
-.streak-text{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--coral);line-height:2;}
-.empty{text-align:center;padding:48px 24px;color:var(--muted);font-family:'VT323',monospace;font-size:20px;}
-.empty-icon{font-size:48px;display:block;margin-bottom:14px;}
-.del-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);font-family:'VT323',monospace;font-size:16px;padding:4px 10px;cursor:pointer;transition:all 0.1s;}
-.del-btn:hover{border-color:var(--coral);color:var(--coral);}
-.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.row-sb{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 input[type=date].vt-input{color-scheme:dark;}
+
+/* ── QUEST LOG ──────────────────────────────────────────────── */
+.quest-entry{margin-bottom:18px;}
+.quest-header{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--panel2);border:2px solid var(--border);border-bottom:none;
+  padding:10px 12px;flex-wrap:wrap;gap:8px;
+}
+.quest-date-text{font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.8vw,8px);color:var(--gold);}
+.quest-body{border:2px solid var(--border);padding:10px 12px;background:var(--panel);}
+.quest-exercise{padding:6px 8px;border-left:3px solid var(--border2);margin-bottom:6px;}
+.quest-exercise:last-child{margin-bottom:0;}
+.quest-ex-name{font-family:'VT323',monospace;font-size:clamp(18px,5vw,22px);color:var(--gold2);margin-bottom:4px;}
+.quest-sets{display:flex;flex-wrap:wrap;gap:5px;}
+.set-tag{
+  background:var(--panel2);border:1px solid var(--border2);
+  padding:3px 8px;font-family:'VT323',monospace;font-size:15px;color:var(--teal);
+}
+.quest-note{
+  background:rgba(200,164,74,0.05);border-left:3px solid var(--gold);
+  padding:8px 10px;margin-top:8px;
+  font-family:'VT323',monospace;font-size:17px;color:var(--muted);
+}
+
+/* ── MISC ───────────────────────────────────────────────────── */
+.split-badge{
+  background:var(--panel2);border:1px solid var(--border2);
+  padding:4px 10px;font-family:'VT323',monospace;font-size:16px;
+  color:var(--teal);display:inline-flex;align-items:center;gap:5px;
+}
+.del-btn{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--muted);font-family:'VT323',monospace;font-size:16px;
+  padding:6px 10px;cursor:pointer;transition:all 0.1s;
+  min-height:36px;display:inline-flex;align-items:center;
+}
+.del-btn:active{border-color:var(--coral);color:var(--coral);}
+@media(hover:hover){.del-btn:hover{border-color:var(--coral);color:var(--coral);}}
+
+.toast{
+  position:fixed;
+  left:50%;transform:translateX(-50%);
+  bottom:calc(var(--nav-h) + var(--safe-bot) + 12px);
+  background:var(--panel);border:2px solid var(--teal);
+  padding:12px 18px;
+  font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.8vw,8px);
+  color:var(--teal);z-index:9999;
+  animation:toastIn 0.25s ease;
+  width:calc(100% - 32px);max-width:340px;
+  line-height:1.7;text-align:center;
+}
+.toast::before{content:'';position:absolute;inset:3px;border:1px solid rgba(74,188,170,0.2);pointer-events:none;}
+@media(min-width:640px){.toast{bottom:20px;}}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(20px);opacity:0;}to{transform:translateX(-50%) translateY(0);opacity:1;}}
+
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-family:'VT323',monospace;font-size:20px;}
+.empty-icon{font-size:44px;display:block;margin-bottom:14px;}
+
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.row-sb{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.gap-top{margin-top:8px;}
 </style>
 </head>
 <body>
@@ -161,67 +554,101 @@ const { useState, useEffect, useCallback } = React;
 const QUOTES=[
   {speaker:"GYM SAGE",text:"The iron never lies. Unlike your bathroom scale.",portrait:"🧙"},
   {speaker:"DARK LORD LEG DAY",text:"You skipped me again. The quad seeks vengeance. You will waddle.",portrait:"👿"},
-  {speaker:"ANCIENT PROVERB",text:"Pain is just weakness leaving the body. Lots of weakness in there.",portrait:"📜"},
+  {speaker:"ANCIENT PROVERB",text:"Pain is weakness leaving the body. Lots of weakness in there.",portrait:"📜"},
   {speaker:"YOUR FUTURE SELF",text:"Hey. Start now. I will be waiting. Looking incredible.",portrait:"🪞"},
   {speaker:"BENCH PRESS GHOST",text:"Every empty bar was once someone's max. Touch grass. Lift iron.",portrait:"👻"},
-  {speaker:"PROTEIN SHAKE ORACLE",text:"Two scoops for gains, and the crushing loneliness of not lifting.",portrait:"🔮"},
-  {speaker:"THE DUMBBELLS",text:"We remember every time you cleaned us and never actually used us.",portrait:"🏋️"},
-  {speaker:"CARDIO DEMON",text:"You have been 'about to start running' for 3 years. I'm still here.",portrait:"😈"},
-  {speaker:"REST DAY SPIRIT",text:"Muscles grow while you sleep. So yes, napping counts. Not really.",portrait:"💤"},
-  {speaker:"ANCIENT GYM BRO",text:"Form before ego. Unless no one is watching. Then ego before form.",portrait:"🦍"},
-  {speaker:"SPOTTER OF DESTINY",text:"I got you. I always got you. You didn't need help. I just liked the view.",portrait:"🤝"},
-  {speaker:"THE PRE-WORKOUT",text:"I will make you feel invincible. You will squat 60kg. This is fine.",portrait:"⚡"},
+  {speaker:"PROTEIN SHAKE ORACLE",text:"Two scoops: for gains, and crushing loneliness of not lifting.",portrait:"🔮"},
+  {speaker:"THE DUMBBELLS",text:"We remember every time you cleaned us and never used us.",portrait:"🏋️"},
+  {speaker:"CARDIO DEMON",text:"You have been 'about to start running' for 3 years. Still here.",portrait:"😈"},
+  {speaker:"REST DAY SPIRIT",text:"Muscles grow while you sleep. Napping counts. Not really.",portrait:"💤"},
+  {speaker:"ANCIENT GYM BRO",text:"Form before ego. Unless no one is watching. Then ego.",portrait:"🦍"},
+  {speaker:"SPOTTER OF DESTINY",text:"I got you. You didn't need help. I just liked the view.",portrait:"🤝"},
+  {speaker:"THE PRE-WORKOUT",text:"I will make you invincible. You will squat 60kg. Fine.",portrait:"⚡"},
 ];
 
 const SPLIT_CLASSES=[
-  {id:"push",label:"PUSH",emoji:"🗡️",subtext:"Chest · Shoulder · Tri",color:"#C84850"},
-  {id:"pull",label:"PULL",emoji:"🏹",subtext:"Back · Biceps",color:"#8870C8"},
-  {id:"legs",label:"LEGS",emoji:"🦵",subtext:"Quad · Ham · Glute",color:"#4ABCAA"},
-  {id:"chest",label:"CHEST",emoji:"🛡️",subtext:"Chest Focus",color:"#C8A44A"},
-  {id:"back",label:"BACK",emoji:"🏔️",subtext:"Back · Rows",color:"#50A868"},
-  {id:"shoulders",label:"SHOULDERS",emoji:"⚔️",subtext:"Deltoid · Traps",color:"#D4604A"},
-  {id:"arms",label:"ARMS",emoji:"💪",subtext:"Bi · Tri · Forearm",color:"#8870C8"},
-  {id:"core",label:"CORE",emoji:"🌀",subtext:"Abs · Obliques",color:"#4A8CC8"},
-  {id:"cardio",label:"CARDIO",emoji:"🏃",subtext:"Endurance",color:"#50C870"},
-  {id:"fullbody",label:"FULL BODY",emoji:"⚡",subtext:"Everything hurts",color:"#E8C878"},
-  {id:"rest",label:"REST",emoji:"🛌",subtext:"Recover · Eat · Cry",color:"#7070A0"},
-  {id:"custom",label:"CUSTOM",emoji:"✏️",subtext:"Your own path",color:"#A0A080"},
+  {id:"push",    label:"PUSH",     emoji:"🗡️", subtext:"Chest · Shoulder · Tri",color:"#C84850"},
+  {id:"pull",    label:"PULL",     emoji:"🏹", subtext:"Back · Biceps",          color:"#8870C8"},
+  {id:"legs",    label:"LEGS",     emoji:"🦵", subtext:"Quad · Ham · Glute",     color:"#4ABCAA"},
+  {id:"chest",   label:"CHEST",    emoji:"🛡️", subtext:"Chest Focus",            color:"#C8A44A"},
+  {id:"back",    label:"BACK",     emoji:"🏔️", subtext:"Back · Rows",            color:"#50A868"},
+  {id:"shoulders",label:"SHOULDER",emoji:"⚔️", subtext:"Delt · Traps",           color:"#D4604A"},
+  {id:"arms",    label:"ARMS",     emoji:"💪", subtext:"Bi · Tri · Forearm",     color:"#8870C8"},
+  {id:"core",    label:"CORE",     emoji:"🌀", subtext:"Abs · Obliques",         color:"#4A8CC8"},
+  {id:"cardio",  label:"CARDIO",   emoji:"🏃", subtext:"Endurance",              color:"#50C870"},
+  {id:"fullbody",label:"FULL BODY",emoji:"⚡", subtext:"Everything hurts",       color:"#E8C878"},
+  {id:"rest",    label:"REST",     emoji:"🛌", subtext:"Recover · Eat · Cry",   color:"#7070A0"},
+  {id:"custom",  label:"CUSTOM",   emoji:"✏️", subtext:"Your own path",         color:"#A0A080"},
 ];
 
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const DAY_FULL={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
+
 function getTodayKey(){return["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];}
 function getTodayISO(){return new Date().toISOString().split("T")[0];}
 function getDayFromISO(iso){const d=new Date(iso+"T00:00:00");return["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];}
-function fmtDate(iso){const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-AU",{weekday:"short",day:"2-digit",month:"short",year:"numeric"});}
+function fmtDate(iso){
+  const d=new Date(iso+"T00:00:00");
+  return d.toLocaleDateString("en-AU",{weekday:"short",day:"2-digit",month:"short",year:"numeric"});
+}
 function newEx(){return{id:Date.now()+Math.random(),name:"",sets:[{reps:"",weight:""}]};}
-function computeStreak(wk){let s=0,d=new Date();d.setHours(0,0,0,0);for(let i=0;i<90;i++){const k=d.toISOString().split("T")[0];if(wk[k]?.exercises?.length>0)s++;else if(i>0)break;d.setDate(d.getDate()-1);}return s;}
-function computeLevel(total){return Math.max(1,Math.floor(total/3)+1);}
+function computeStreak(wk){
+  let s=0,d=new Date();d.setHours(0,0,0,0);
+  for(let i=0;i<90;i++){
+    const k=d.toISOString().split("T")[0];
+    if(wk[k]?.exercises?.length>0)s++;else if(i>0)break;
+    d.setDate(d.getDate()-1);
+  }
+  return s;
+}
+function computeLevel(n){return Math.max(1,Math.floor(n/3)+1);}
 
+const RANKS=[
+  {minLvl:1,  title:"COUCH COMMANDER",   icon:"🛋️"},
+  {minLvl:2,  title:"GYM TOURIST",       icon:"🗺️"},
+  {minLvl:3,  title:"PROTEIN PADAWAN",   icon:"🥛"},
+  {minLvl:4,  title:"SWEATY APPRENTICE", icon:"💧"},
+  {minLvl:5,  title:"IRON RECRUIT",      icon:"⚙️"},
+  {minLvl:6,  title:"GAINZ GOBLIN",      icon:"👺"},
+  {minLvl:7,  title:"BULK OPERATOR",     icon:"📦"},
+  {minLvl:8,  title:"SWEAT MACHINE",     icon:"🤖"},
+  {minLvl:9,  title:"REP REAPER",        icon:"💀"},
+  {minLvl:10, title:"IRON ASCENDANT",    icon:"⚡"},
+  {minLvl:12, title:"LEGENDARY UNIT",    icon:"👑"},
+  {minLvl:15, title:"TRANSCENDED CHAD",  icon:"🌌"},
+];
+function getRank(level){
+  let r=RANKS[0];
+  for(const rank of RANKS){if(level>=rank.minLvl)r=rank;}
+  return r;
+}
+
+/* TOAST */
 function Toast({msg,onClose}){
-  useEffect(()=>{const t=setTimeout(onClose,2600);return()=>clearTimeout(t);},[]);
+  useEffect(()=>{const t=setTimeout(onClose,2800);return()=>clearTimeout(t);},[]);
   return <div className="toast">▶ {msg}</div>;
 }
 
-/* HOME */
+/* ══════════════════ HOME ══════════════════ */
 function HomeTab({workouts,splits,setTab}){
   const [quote]=useState(()=>QUOTES[Math.floor(Math.random()*QUOTES.length)]);
-  const today=getTodayKey(),todayISO=getTodayISO();
+  const today=getTodayKey(), todayISO=getTodayISO();
   const todaySplit=splits[today]||null;
   const todayClass=todaySplit?SPLIT_CLASSES.find(c=>c.id===todaySplit.id)||todaySplit:null;
   const totalWk=Object.keys(workouts).filter(d=>workouts[d]?.exercises?.length>0).length;
   const streak=computeStreak(workouts);
   const level=computeLevel(totalWk);
+  const rank=getRank(level);
   const totalEx=Object.values(workouts).reduce((s,w)=>s+(w?.exercises?.length||0),0);
   const totalSets=Object.values(workouts).reduce((s,w)=>s+(w?.exercises||[]).reduce((a,e)=>a+(e?.sets?.length||0),0),0);
   const todayDone=workouts[todayISO]?.exercises?.length>0;
-  const strBar=Math.min(100,(totalSets/500)*100);
-  const endBar=Math.min(100,(totalEx/200)*100);
+  const hpBar=todayDone?100:todaySplit?30:12;
   const expBar=Math.min(100,((totalWk%3)/3)*100);
-  const hpBar=todayDone?100:todaySplit?30:15;
+  const strBar=Math.min(100,(totalSets/500)*100);
 
   return(
     <div className="page">
+      {/* QUOTE */}
       <div className="dialog-box">
         <div className="dialog-portrait">{quote.portrait}</div>
         <span className="dialog-speaker">{quote.speaker}</span>
@@ -231,22 +658,26 @@ function HomeTab({workouts,splits,setTab}){
       {streak>=2&&(
         <div className="streak-banner">
           <span className="streak-fire">🔥</span>
-          <div className="streak-text">{streak}-DAY COMBO STREAK ACTIVE<br/><span style={{color:"var(--muted)"}}>the iron gods are pleased</span></div>
+          <div className="streak-text">
+            {streak}-DAY COMBO ACTIVE<br/>
+            <span style={{color:"var(--muted)"}}>the iron gods approve</span>
+          </div>
         </div>
       )}
 
+      {/* CHARACTER */}
       <div className="section-title">CHARACTER STATUS</div>
-      <div className="panel panel-gold" style={{marginBottom:14}}>
+      <div className="panel panel-gold">
         <div className="char-grid">
-          <div style={{position:"relative"}}>
+          <div style={{position:"relative",flexShrink:0}}>
             <div className="char-avatar">
               {todayDone?"💪":todaySplit?"⚔️":"😴"}
               <div className="level-badge">LVL {level}</div>
             </div>
           </div>
-          <div>
-            <span className="px-label px-label-gold" style={{marginBottom:2}}>IRON WARRIOR</span>
-            <div style={{fontFamily:"'VT323',monospace",fontSize:"26px",color:"var(--gold2)",marginBottom:12}}>
+          <div className="char-info">
+            <span className="px-label px-label-gold" style={{marginBottom:2}}>{rank.icon} {rank.title}</span>
+            <div className="char-status">
               {todayDone?"BATTLE COMPLETE":todaySplit?"QUEST AWAITS":"IN THE TAVERN"}
             </div>
             <div className="stat-row">
@@ -268,92 +699,130 @@ function HomeTab({workouts,splits,setTab}){
         </div>
       </div>
 
+      {/* TODAY MISSION */}
       {todayClass?(
         <div className="mission-box">
           <div className="mission-name">{todayClass.emoji} {todayClass.label} DAY</div>
-          <div className="mission-sub">{todayDone?"✓ COMPLETED — you absolute unit":`${todayClass.subtext||""} — awaiting battle log`}</div>
-          {!todayDone&&<div style={{marginTop:12}}><button className="btn btn-teal btn-sm" onClick={()=>setTab("log")}>▶ LOG NOW</button></div>}
+          <div className="mission-sub">
+            {todayDone?"✓ COMPLETED — you absolute unit":`${todayClass.subtext||""}`}
+          </div>
+          {!todayDone&&(
+            <div style={{marginTop:12}}>
+              <button className="btn btn-teal btn-sm" onClick={()=>setTab("log")}>▶ LOG NOW</button>
+            </div>
+          )}
         </div>
       ):(
-        <div className="panel" style={{marginBottom:14,borderStyle:"dashed"}}>
-          <span className="px-label">NO MISSION ASSIGNED TODAY</span>
-          <div style={{fontFamily:"'VT323',monospace",fontSize:"20px",color:"var(--muted)"}}>Head to FORMATION to plan your week</div>
-          <div style={{marginTop:10}}><button className="btn btn-muted btn-sm" onClick={()=>setTab("splits")}>▶ OPEN FORMATION</button></div>
+        <div className="panel" style={{borderStyle:"dashed",marginTop:10}}>
+          <span className="px-label">NO MISSION TODAY</span>
+          <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)"}}>
+            Set your weekly formation first
+          </div>
+          <div style={{marginTop:10}}>
+            <button className="btn btn-muted btn-sm" onClick={()=>setTab("splits")}>▶ SET FORMATION</button>
+          </div>
         </div>
       )}
 
+      {/* STATS */}
       <div className="section-title">STATS</div>
-      <div className="stats-grid" style={{marginBottom:16}}>
-        {[{val:totalWk,label:"QUESTS DONE",cls:"coral"},{val:streak,label:"DAY STREAK",cls:"teal"},{val:totalEx,label:"ENCOUNTERS",cls:"purple"},{val:totalSets,label:"TOTAL ROUNDS",cls:"green"}].map(s=>(
+      <div className="stats-grid">
+        {[
+          {val:totalWk, label:"QUESTS",    cls:"coral"},
+          {val:streak,  label:"STREAK 🔥", cls:"teal"},
+          {val:totalEx, label:"ENCOUNTERS",cls:"purple"},
+          {val:totalSets,label:"ROUNDS",   cls:"green"},
+        ].map(s=>(
           <div key={s.label} className="mini-stat">
             <div className={"big-stat "+s.cls}>{s.val}</div>
-            <span className="px-label" style={{marginBottom:0,marginTop:4,fontSize:"7px"}}>{s.label}</span>
+            <span className="px-label" style={{marginBottom:0,marginTop:4,fontSize:"6px"}}>{s.label}</span>
           </div>
         ))}
       </div>
 
-      <div className="section-title">THIS WEEK'S FORMATION</div>
-      <div className="formation-grid" style={{marginBottom:16}}>
+      {/* WEEK */}
+      <div className="section-title">THIS WEEK</div>
+      <div className="formation-grid" style={{marginBottom:14}}>
         {DAYS.map(d=>{
           const sp=splits[d],cl=sp?SPLIT_CLASSES.find(c=>c.id===sp.id)||sp:null,isToday=d===today;
           return(
             <div key={d} className={"day-slot"+(isToday?" today":"")+(sp?" has-split":"")}>
               <span className="slot-day">{d}{isToday?"◄":""}</span>
               <span className="slot-emoji">{cl?cl.emoji:"—"}</span>
-              <span className="slot-name" style={{fontSize:"11px"}}>{cl?cl.label.split(" ")[0]:"REST"}</span>
+              <span className="slot-name">{cl?cl.label.split(" ")[0]:"rest"}</span>
             </div>
           );
         })}
       </div>
 
+      {/* RECENT */}
       <div className="section-title">RECENT QUESTS</div>
       {Object.keys(workouts).filter(d=>workouts[d]?.exercises?.length>0).sort().reverse().slice(0,3).map(date=>(
-        <div key={date} className="panel" style={{marginBottom:8,padding:"12px 14px"}}>
+        <div key={date} className="panel" style={{padding:"12px 14px",marginBottom:8}}>
           <div className="row-sb">
-            <div>
-              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:"8px",color:"var(--gold)",marginBottom:4}}>{fmtDate(date)}</div>
-              <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)"}}>{workouts[date].exercises.length} exercise{workouts[date].exercises.length!==1?"s":""} logged</div>
+            <div style={{minWidth:0}}>
+              <div style={{fontFamily:"'Press Start 2P',monospace",fontSize:"clamp(6px,1.8vw,8px)",color:"var(--gold)",marginBottom:4,fontSize:"7px"}}>{fmtDate(date)}</div>
+              <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)"}}>
+                {workouts[date].exercises.length} exercise{workouts[date].exercises.length!==1?"s":""} logged
+              </div>
             </div>
-            {workouts[date].split&&<span className="split-badge">{workouts[date].split.emoji} {(workouts[date].split.label||"").split(" ")[0]}</span>}
+            {workouts[date].split&&(
+              <span className="split-badge" style={{flexShrink:0}}>
+                {workouts[date].split.emoji} {(workouts[date].split.label||"").split(" ")[0]}
+              </span>
+            )}
           </div>
         </div>
       ))}
       {Object.keys(workouts).filter(d=>workouts[d]?.exercises?.length>0).length===0&&(
         <div className="empty">
           <span className="empty-icon">🏰</span>
-          No quests completed yet, warrior.<br/>
-          <span style={{fontSize:"16px",color:"#5a5a80"}}>The dungeon awaits your first entry.</span>
-          <div style={{marginTop:20}}><button className="btn btn-gold" onClick={()=>setTab("log")}>▶ BEGIN FIRST QUEST</button></div>
+          No quests yet, warrior.<br/>
+          <span style={{fontSize:"16px",color:"#5a5a80"}}>The dungeon awaits.</span>
+          <div style={{marginTop:20}}>
+            <button className="btn btn-gold" onClick={()=>setTab("log")}>▶ FIRST QUEST</button>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-/* FORMATION */
+/* ══════════════════ FORMATION ══════════════════ */
 function SplitsTab({splits,setSplits,toast}){
   const [sel,setSel]=useState(null);
   const [customName,setCustomName]=useState("");
   const today=getTodayKey();
+
   const assign=(cls)=>{
-    if(!sel) return;
+    if(!sel)return;
     let val=cls;
-    if(cls.id==="custom"){if(!customName.trim()){alert("Name your custom class!");return;}val={...cls,label:customName.trim().toUpperCase()};}
+    if(cls.id==="custom"){
+      if(!customName.trim()){alert("Name your custom class!");return;}
+      val={...cls,label:customName.trim().toUpperCase()};
+    }
     setSplits(p=>({...p,[sel]:val}));
     toast(DAY_FULL[sel]+" → "+val.label);
     setSel(null);setCustomName("");
   };
-  const clear=(d)=>{setSplits(p=>{const n={...p};delete n[d];return n;});toast("Slot cleared.");};
+  const clear=(d)=>{setSplits(p=>{const n={...p};delete n[d];return n;});toast("Day cleared.");};
   const selClass=sel?splits[sel]:null;
+
   return(
     <div className="page">
       <div className="section-title">PARTY FORMATION</div>
-      <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)",marginBottom:16}}>Assign a battle class to each day. Click a slot to edit it.</div>
+      <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)",marginBottom:14}}>
+        Assign a battle class to each day. Tap a slot to change it.
+      </div>
+
       <div className="formation-grid">
         {DAYS.map(d=>{
           const sp=splits[d],cl=sp?SPLIT_CLASSES.find(c=>c.id===sp.id)||sp:null,isToday=d===today;
           return(
-            <div key={d} className={"day-slot"+(isToday?" today":"")+(sel===d?" selected":"")+(sp?" has-split":"")} onClick={()=>setSel(sel===d?null:d)}>
+            <div key={d}
+              className={"day-slot"+(isToday?" today":"")+(sel===d?" selected":"")+(sp?" has-split":"")}
+              onClick={()=>setSel(sel===d?null:d)}
+            >
               <span className="slot-day">{d}{isToday?" ◄":""}</span>
               <span className="slot-emoji">{cl?cl.emoji:"+"}</span>
               <span className="slot-name">{cl?cl.label.split(" ")[0]:"tap"}</span>
@@ -361,32 +830,63 @@ function SplitsTab({splits,setSplits,toast}){
           );
         })}
       </div>
+
       {sel&&(
-        <div className="panel panel-teal" style={{marginTop:4}}>
+        <div className="panel panel-teal">
           <span className="px-label px-label-teal">ASSIGN CLASS → {(DAY_FULL[sel]||"").toUpperCase()}</span>
           <div className="class-list">
             {SPLIT_CLASSES.map(cls=>(
-              <div key={cls.id} className={"class-chip"+(selClass?.id===cls.id?" active":"")} onClick={()=>cls.id!=="custom"?assign(cls):null} style={selClass?.id===cls.id?{borderColor:cls.color,color:cls.color}:{}}>
-                <span style={{fontSize:"20px"}}>{cls.emoji}</span><span>{cls.label}</span>
+              <div key={cls.id}
+                className={"class-chip"+(selClass?.id===cls.id?" active":"")}
+                onClick={()=>cls.id!=="custom"?assign(cls):null}
+                style={selClass?.id===cls.id?{borderColor:cls.color,color:cls.color}:{}}
+              >
+                <span style={{fontSize:"18px"}}>{cls.emoji}</span>
+                <span>{cls.label}</span>
               </div>
             ))}
           </div>
-          <div className="row" style={{marginTop:14}}>
-            <input className="vt-input" style={{flex:1}} placeholder="Custom class name..." value={customName} onChange={e=>setCustomName(e.target.value)}/>
-            <button className="btn btn-muted btn-sm" onClick={()=>assign(SPLIT_CLASSES.find(c=>c.id==="custom"))}>SET CUSTOM</button>
+          <div className="row" style={{marginTop:12}}>
+            <input
+              className="vt-input"
+              style={{flex:1,minWidth:0}}
+              placeholder="Custom class name..."
+              value={customName}
+              onChange={e=>setCustomName(e.target.value)}
+            />
+            <button className="btn btn-muted btn-sm" onClick={()=>assign(SPLIT_CLASSES.find(c=>c.id==="custom"))}>
+              SET
+            </button>
           </div>
-          {selClass&&<div style={{marginTop:12}}><button className="btn btn-coral btn-sm" onClick={()=>clear(sel)}>✕ CLEAR DAY</button></div>}
+          {selClass&&(
+            <div style={{marginTop:12}}>
+              <button className="btn btn-coral btn-sm" onClick={()=>clear(sel)}>✕ CLEAR DAY</button>
+            </div>
+          )}
         </div>
       )}
+
       <div className="section-title" style={{marginTop:8}}>FULL ROSTER</div>
       <div className="panel">
-        {DAYS.map(d=>{
+        {DAYS.map((d,i)=>{
           const sp=splits[d],cl=sp?SPLIT_CLASSES.find(c=>c.id===sp.id)||sp:null;
           return(
-            <div key={d} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 0",borderBottom:"1px solid var(--border)"}}>
-              <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:"7px",color:"var(--muted)",width:28}}>{d}</span>
-              {cl?(<><span style={{fontSize:"18px"}}>{cl.emoji}</span><span style={{fontFamily:"'VT323',monospace",fontSize:"20px",color:"var(--text)",flex:1}}>{cl.label}</span><span style={{fontFamily:"'VT323',monospace",fontSize:"15px",color:"var(--muted)"}}>{cl.subtext||""}</span><button className="del-btn" onClick={()=>clear(d)}>✕</button></>)
-              :(<span style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--border2)",flex:1}}>— REST / UNASSIGNED</span>)}
+            <div key={d} style={{
+              display:"flex",alignItems:"center",gap:10,
+              padding:"11px 0",
+              borderBottom:i<DAYS.length-1?"1px solid var(--border)":"none"
+            }}>
+              <span style={{fontFamily:"'Press Start 2P',monospace",fontSize:"6px",color:"var(--muted)",width:24,flexShrink:0}}>{d}</span>
+              {cl?(
+                <>
+                  <span style={{fontSize:"18px",flexShrink:0}}>{cl.emoji}</span>
+                  <span style={{fontFamily:"'VT323',monospace",fontSize:"20px",color:"var(--text)",flex:1,minWidth:0}}>{cl.label}</span>
+                  <span style={{fontFamily:"'VT323',monospace",fontSize:"14px",color:"var(--muted)",flexShrink:0}}>{(cl.subtext||"").split(" ")[0]}</span>
+                  <button className="del-btn" onClick={()=>clear(d)}>✕</button>
+                </>
+              ):(
+                <span style={{fontFamily:"'VT323',monospace",fontSize:"17px",color:"var(--border2)",flex:1}}>— REST / UNASSIGNED</span>
+              )}
             </div>
           );
         })}
@@ -395,125 +895,219 @@ function SplitsTab({splits,setSplits,toast}){
   );
 }
 
-/* BATTLE LOG */
+/* ══════════════════ BATTLE LOG ══════════════════ */
 function LogTab({workouts,setWorkouts,splits,toast}){
   const [date,setDate]=useState(getTodayISO());
-  const [exercises,setExercises]=useState(()=>{const ex=workouts[getTodayISO()]?.exercises;return ex?.length?ex:[newEx()];});
+  const [exercises,setExercises]=useState(()=>{
+    const ex=workouts[getTodayISO()]?.exercises;
+    return ex?.length?ex:[newEx()];
+  });
   const [notes,setNotes]=useState(()=>workouts[getTodayISO()]?.notes||"");
   const [saved,setSaved]=useState(false);
-  useEffect(()=>{const w=workouts[date];setExercises(w?.exercises?.length?w.exercises:[newEx()]);setNotes(w?.notes||"");setSaved(false);},[date]);
+
+  useEffect(()=>{
+    const w=workouts[date];
+    setExercises(w?.exercises?.length?w.exercises:[newEx()]);
+    setNotes(w?.notes||"");
+    setSaved(false);
+  },[date]);
+
   const dayKey=getDayFromISO(date);
   const split=splits[dayKey];
   const splitClass=split?SPLIT_CLASSES.find(c=>c.id===split.id)||split:null;
+
   const updName=(id,name)=>setExercises(p=>p.map(e=>e.id===id?{...e,name}:e));
   const addSet=(id)=>setExercises(p=>p.map(e=>e.id===id?{...e,sets:[...e.sets,{reps:"",weight:""}]}:e));
   const remSet=(id,i)=>setExercises(p=>p.map(e=>e.id===id?{...e,sets:e.sets.filter((_,si)=>si!==i)}:e));
   const updSet=(id,i,f,v)=>setExercises(p=>p.map(e=>e.id===id?{...e,sets:e.sets.map((s,si)=>si===i?{...s,[f]:v}:s)}:e));
   const addEx=()=>setExercises(p=>[...p,newEx()]);
   const remEx=(id)=>setExercises(p=>p.filter(e=>e.id!==id));
+
   const save=()=>{
     const valid=exercises.filter(e=>e.name.trim());
     setWorkouts(p=>({...p,[date]:{split:split||null,exercises:valid,notes,savedAt:new Date().toISOString()}}));
     setSaved(true);toast("QUEST LOGGED. GLORY ACHIEVED.");
   };
+
   return(
     <div className="page">
       <div className="section-title">BATTLE LOG</div>
+
       <div className="panel" style={{marginBottom:14}}>
-        <div className="row">
-          <div>
+        <div style={{display:"flex",gap:14,flexWrap:"wrap",alignItems:"flex-end"}}>
+          <div style={{flex:"1 1 160px",minWidth:0}}>
             <span className="px-label">DATE</span>
-            <input type="date" className="vt-input" style={{width:"auto"}} value={date} onChange={e=>{setDate(e.target.value);setSaved(false);}}/>
+            <input type="date" className="vt-input"
+              value={date} onChange={e=>{setDate(e.target.value);setSaved(false);}}/>
           </div>
           {splitClass&&(
-            <div>
+            <div style={{flex:"1 1 120px",minWidth:0}}>
               <span className="px-label">TODAY'S CLASS</span>
-              <div style={{fontFamily:"'VT323',monospace",fontSize:"24px",color:"var(--gold2)",display:"flex",alignItems:"center",gap:8}}>
-                <span>{splitClass.emoji}</span><span>{splitClass.label}</span>
+              <div style={{
+                fontFamily:"'VT323',monospace",fontSize:"clamp(20px,5vw,24px)",
+                color:"var(--gold2)",display:"flex",alignItems:"center",gap:8
+              }}>
+                <span>{splitClass.emoji}</span>
+                <span>{splitClass.label}</span>
               </div>
             </div>
           )}
         </div>
       </div>
+
       <div className="section-title">ENCOUNTERS</div>
+
       {exercises.map((ex,ei)=>(
         <div key={ex.id} className="encounter">
           <div className="encounter-header">
             <span className="encounter-num">#{ei+1}</span>
-            <input className="encounter-input" placeholder="Exercise name..." value={ex.name} onChange={e=>updName(ex.id,e.target.value)}/>
-            <button className="del-btn" onClick={()=>remEx(ex.id)}>✕ REMOVE</button>
+            <input
+              className="encounter-input"
+              placeholder="Exercise name..."
+              value={ex.name}
+              onChange={e=>updName(ex.id,e.target.value)}
+              autoComplete="off"
+            />
+            <button className="del-btn" onClick={()=>remEx(ex.id)} style={{flexShrink:0}}>✕</button>
           </div>
-          <table className="rounds-table">
-            <thead><tr><th style={{width:28}}>RD</th><th>REPS</th><th>WEIGHT KG</th><th style={{width:48}}></th></tr></thead>
-            <tbody>
-              {ex.sets.map((s,si)=>(
-                <tr key={si}>
-                  <td className="round-num">{si+1}</td>
-                  <td><input className="round-input" type="number" min="0" placeholder="12" value={s.reps} onChange={e=>updSet(ex.id,si,"reps",e.target.value)}/></td>
-                  <td><input className="round-input" type="number" min="0" step="0.5" placeholder="60" value={s.weight} onChange={e=>updSet(ex.id,si,"weight",e.target.value)}/></td>
-                  <td>{ex.sets.length>1&&<button className="round-del" onClick={()=>remSet(ex.id,si)}>✕</button>}</td>
+
+          <div className="sets-scroll">
+            <table className="rounds-table">
+              <thead>
+                <tr>
+                  <th style={{width:24}}>RD</th>
+                  <th style={{width:80}}>REPS</th>
+                  <th style={{width:80}}>WEIGHT</th>
+                  <th style={{width:36}}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <div style={{marginTop:10}}><button className="btn btn-muted btn-sm" onClick={()=>addSet(ex.id)}>+ ADD ROUND</button></div>
+              </thead>
+              <tbody>
+                {ex.sets.map((s,si)=>(
+                  <tr key={si}>
+                    <td className="round-num">{si+1}</td>
+                    <td>
+                      <input className="round-input" type="number"
+                        min="0" inputMode="numeric" placeholder="12"
+                        value={s.reps} onChange={e=>updSet(ex.id,si,"reps",e.target.value)}/>
+                    </td>
+                    <td>
+                      <input className="round-input" type="number"
+                        min="0" step="0.5" inputMode="decimal" placeholder="60"
+                        value={s.weight} onChange={e=>updSet(ex.id,si,"weight",e.target.value)}/>
+                    </td>
+                    <td>
+                      {ex.sets.length>1&&(
+                        <button className="round-del" onClick={()=>remSet(ex.id,si)}>✕</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <button className="btn btn-muted btn-sm gap-top" onClick={()=>addSet(ex.id)}>
+            + ADD ROUND
+          </button>
         </div>
       ))}
-      <div className="row" style={{marginBottom:20}}>
+
+      <div className="row" style={{marginBottom:18}}>
         <button className="btn btn-teal" onClick={addEx}>+ ADD ENCOUNTER</button>
         <button className="btn btn-muted btn-sm" onClick={()=>setExercises([newEx()])}>↺ RESET</button>
       </div>
+
       <hr className="divider"/>
-      <div style={{marginBottom:18}}>
-        <span className="px-label">BATTLE NOTES <span style={{opacity:0.5}}>(optional)</span></span>
-        <textarea className="vt-textarea" placeholder="How did it go? New PR? Near death experience? Blame the pre-workout..." value={notes} onChange={e=>setNotes(e.target.value)}/>
+
+      <div style={{marginBottom:16}}>
+        <span className="px-label">
+          BATTLE NOTES <span style={{opacity:0.45}}>(optional)</span>
+        </span>
+        <textarea
+          className="vt-textarea"
+          placeholder="New PR? Near death? Blame the pre-workout..."
+          value={notes}
+          onChange={e=>setNotes(e.target.value)}
+        />
       </div>
-      <button className="btn btn-gold" style={{width:"100%",justifyContent:"center",padding:"16px",fontSize:"10px"}} onClick={save}>
-        {saved?"✓ QUEST SAVED — YOU ARE LEGEND":"▶ SAVE QUEST"}
+
+      <button
+        className="btn btn-gold btn-block"
+        style={{padding:"16px",fontSize:"clamp(7px,2vw,10px)"}}
+        onClick={save}
+      >
+        {saved?"✓ QUEST SAVED — LEGEND":"▶ SAVE QUEST"}
       </button>
+
       {exercises.filter(e=>!e.name.trim()).length>0&&(
-        <div style={{fontFamily:"'VT323',monospace",fontSize:"16px",color:"var(--muted)",textAlign:"center",marginTop:8}}>⚠ unnamed encounters will not be saved</div>
+        <div style={{
+          fontFamily:"'VT323',monospace",fontSize:"16px",
+          color:"var(--muted)",textAlign:"center",marginTop:8
+        }}>
+          ⚠ unnamed encounters won't be saved
+        </div>
       )}
     </div>
   );
 }
 
-/* QUEST ARCHIVE */
+/* ══════════════════ QUEST ARCHIVE ══════════════════ */
 function HistoryTab({workouts,setWorkouts,toast}){
   const sorted=Object.keys(workouts).filter(d=>workouts[d]?.exercises?.length>0).sort().reverse();
+
   const del=(date)=>{
-    if(!window.confirm("Delete quest from "+fmtDate(date)+"?")) return;
+    if(!window.confirm("Delete quest from "+fmtDate(date)+"?"))return;
     setWorkouts(p=>{const n={...p};delete n[date];return n;});
     toast("Quest erased from the scrolls.");
   };
-  if(!sorted.length) return(
+
+  if(!sorted.length)return(
     <div className="page">
       <div className="section-title">QUEST ARCHIVE</div>
-      <div className="empty"><span className="empty-icon">📜</span>The scrolls are empty, warrior.<br/><span style={{fontSize:"16px",color:"#5a5a80"}}>Log your first battle to begin the legend.</span></div>
+      <div className="empty">
+        <span className="empty-icon">📜</span>
+        The scrolls are empty, warrior.<br/>
+        <span style={{fontSize:"16px",color:"#5a5a80"}}>Log your first battle to begin.</span>
+      </div>
     </div>
   );
+
   return(
     <div className="page">
       <div className="section-title">QUEST ARCHIVE</div>
-      <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)",marginBottom:20}}>{sorted.length} quest{sorted.length!==1?"s":""} in the scrolls ▮</div>
+      <div style={{fontFamily:"'VT323',monospace",fontSize:"18px",color:"var(--muted)",marginBottom:16}}>
+        {sorted.length} quest{sorted.length!==1?"s":""} in the scrolls ▮
+      </div>
+
       {sorted.map(date=>{
-        const w=workouts[date],sc=w.split?SPLIT_CLASSES.find(c=>c.id===w.split.id)||w.split:null;
+        const w=workouts[date];
+        const sc=w.split?SPLIT_CLASSES.find(c=>c.id===w.split.id)||w.split:null;
         return(
           <div key={date} className="quest-entry">
             <div className="quest-header">
               <span className="quest-date-text">{fmtDate(date)}</span>
               <div className="row">
                 {sc&&<span className="split-badge">{sc.emoji} {(sc.label||"").split(" ")[0]}</span>}
-                <button className="del-btn" onClick={()=>del(date)}>✕ DELETE</button>
+                <button className="del-btn" onClick={()=>del(date)}>✕</button>
               </div>
             </div>
             <div className="quest-body">
               {w.exercises.map((ex,i)=>(
                 <div key={i} className="quest-exercise">
-                  <div className="quest-ex-name"><span style={{fontFamily:"'Press Start 2P',monospace",fontSize:"7px",color:"var(--coral)",marginRight:8}}>#{i+1}</span>{ex.name}</div>
-                  <div className="quest-sets">{ex.sets.map((s,si)=>(
-                    <span key={si} className="set-tag">S{si+1}: {s.reps?s.reps:"?"}rep{s.weight?" · "+s.weight+"kg":""}</span>
-                  ))}</div>
+                  <div className="quest-ex-name">
+                    <span style={{
+                      fontFamily:"'Press Start 2P',monospace",fontSize:"6px",
+                      color:"var(--coral)",marginRight:8
+                    }}>#{i+1}</span>
+                    {ex.name}
+                  </div>
+                  <div className="quest-sets">
+                    {ex.sets.map((s,si)=>(
+                      <span key={si} className="set-tag">
+                        S{si+1}: {s.reps||"?"}rep{s.weight?" · "+s.weight+"kg":""}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ))}
               {w.notes&&<div className="quest-note">📝 {w.notes}</div>}
@@ -525,34 +1119,94 @@ function HistoryTab({workouts,setWorkouts,toast}){
   );
 }
 
-/* ROOT */
+/* ══════════════════ ROOT ══════════════════ */
+const TABS=[
+  {id:"home",    label:"GUIDE",    icon:"◆",  longLabel:"◆ FIELD GUIDE"},
+  {id:"splits",  label:"FORM",     icon:"⚔",  longLabel:"⚔ FORMATION"},
+  {id:"log",     label:"BATTLE",   icon:"⚡",  longLabel:"⚡ BATTLE LOG"},
+  {id:"history", label:"ARCHIVE",  icon:"📜",  longLabel:"📜 QUEST ARCHIVE"},
+];
+
 function App(){
   const [tab,setTab]=useState("home");
   const [toast,setToast]=useState(null);
-  const [splits,setSplitsState]=useState(()=>{try{return JSON.parse(localStorage.getItem("iq_splits")||"{}");}catch{return{};}});
-  const [workouts,setWorkoutsState]=useState(()=>{try{return JSON.parse(localStorage.getItem("iq_workouts")||"{}");}catch{return{};}});
-  const setSplits=useCallback(fn=>setSplitsState(p=>{const n=typeof fn==="function"?fn(p):fn;localStorage.setItem("iq_splits",JSON.stringify(n));return n;}),[]);
-  const setWorkouts=useCallback(fn=>setWorkoutsState(p=>{const n=typeof fn==="function"?fn(p):fn;localStorage.setItem("iq_workouts",JSON.stringify(n));return n;}),[]);
+
+  const [splits,setSplitsState]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem("ic_splits")||"{}");}catch{return{};}
+  });
+  const [workouts,setWorkoutsState]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem("ic_workouts")||"{}");}catch{return{};}
+  });
+
+  const setSplits=useCallback(fn=>setSplitsState(p=>{
+    const n=typeof fn==="function"?fn(p):fn;
+    localStorage.setItem("ic_splits",JSON.stringify(n));return n;
+  }),[]);
+  const setWorkouts=useCallback(fn=>setWorkoutsState(p=>{
+    const n=typeof fn==="function"?fn(p):fn;
+    localStorage.setItem("ic_workouts",JSON.stringify(n));return n;
+  }),[]);
+
   const totalWk=Object.keys(workouts).filter(d=>workouts[d]?.exercises?.length>0).length;
   const level=computeLevel(totalWk);
   const streak=computeStreak(workouts);
-  const TABS=[{id:"home",label:"◆ FIELD GUIDE"},{id:"splits",label:"⚔ FORMATION"},{id:"log",label:"⚡ BATTLE LOG"},{id:"history",label:"📜 QUEST ARCHIVE"}];
+  const rank=getRank(level);
+
   return(
     <div>
+      {/* HEADER */}
       <div className="app-header">
-        <div className="app-title">SWEAT<span>.EXE</span></div>
-        <div className="header-level">LVL {level} WARRIOR<br/>🔥 {streak} DAY STREAK</div>
+        <div className="app-title">
+          SWEAT
+          <span className="sub">.EXE</span>
+        </div>
+        <div className="header-right">
+          {rank.icon} {rank.title}<br/>
+          🔥 {streak}-DAY STREAK
+        </div>
       </div>
-      <div className="nav">
-        {TABS.map(t=><button key={t.id} className={"nav-item"+(tab===t.id?" active":"")} onClick={()=>setTab(t.id)}>{t.label}</button>)}
+
+      {/* TOP NAV — desktop only */}
+      <div className="top-nav">
+        {TABS.map(t=>(
+          <button key={t.id}
+            className={"tnav-item"+(tab===t.id?" active":"")}
+            onClick={()=>setTab(t.id)}
+          >
+            {t.longLabel}
+          </button>
+        ))}
       </div>
-      {tab==="home"&&<HomeTab workouts={workouts} splits={splits} setTab={setTab}/>}
-      {tab==="splits"&&<SplitsTab splits={splits} setSplits={setSplits} toast={msg=>setToast(msg)}/>}
-      {tab==="log"&&<LogTab workouts={workouts} setWorkouts={setWorkouts} splits={splits} toast={msg=>setToast(msg)}/>}
-      {tab==="history"&&<HistoryTab workouts={workouts} setWorkouts={setWorkouts} toast={msg=>setToast(msg)}/>}
-      <div style={{textAlign:"center",padding:"28px 20px 40px",fontFamily:"'Press Start 2P',monospace",fontSize:"7px",color:"var(--border2)",lineHeight:2.5}}>
-        SWEAT.EXE v2.0 · SAVING TO LOCAL SCROLL<br/><span style={{opacity:0.5}}>NO SKIPPING LEG DAY. THIS IS LAW.</span>
+
+      {/* PAGE CONTENT */}
+      {tab==="home"    &&<HomeTab    workouts={workouts} splits={splits} setTab={setTab}/>}
+      {tab==="splits"  &&<SplitsTab  splits={splits}  setSplits={setSplits}   toast={msg=>setToast(msg)}/>}
+      {tab==="log"     &&<LogTab     workouts={workouts} setWorkouts={setWorkouts} splits={splits} toast={msg=>setToast(msg)}/>}
+      {tab==="history" &&<HistoryTab workouts={workouts} setWorkouts={setWorkouts} toast={msg=>setToast(msg)}/>}
+
+      {/* FOOTER — desktop only */}
+      <div style={{
+        textAlign:"center",padding:"24px 20px 40px",
+        fontFamily:"'Press Start 2P',monospace",fontSize:"7px",
+        color:"var(--border2)",lineHeight:2.5
+      }} className="top-nav">
+        SWEAT.EXE v3.0<br/>
+        <span style={{opacity:0.5}}>NO SKIPPING LEG DAY. THIS IS LAW.</span>
       </div>
+
+      {/* BOTTOM NAV — mobile only */}
+      <nav className="bottom-nav">
+        {TABS.map(t=>(
+          <button key={t.id}
+            className={"bnav-item"+(tab===t.id?" active":"")}
+            onClick={()=>setTab(t.id)}
+          >
+            <span className="bnav-icon">{t.icon}</span>
+            <span className="bnav-label">{t.label}</span>
+          </button>
+        ))}
+      </nav>
+
       {toast&&<Toast msg={toast} onClose={()=>setToast(null)}/>}
     </div>
   );
