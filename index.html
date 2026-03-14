@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRON QUEST — Gym RPG Tracker</title>
+<title>SWEAT.EXE — Gym RPG Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -540,7 +540,7 @@ function App(){
   return(
     <div>
       <div className="app-header">
-        <div className="app-title">IRON <span>QUEST</span></div>
+        <div className="app-title">SWEAT<span>.EXE</span></div>
         <div className="header-level">LVL {level} WARRIOR<br/>🔥 {streak} DAY STREAK</div>
       </div>
       <div className="nav">
@@ -551,7 +551,7 @@ function App(){
       {tab==="log"&&<LogTab workouts={workouts} setWorkouts={setWorkouts} splits={splits} toast={msg=>setToast(msg)}/>}
       {tab==="history"&&<HistoryTab workouts={workouts} setWorkouts={setWorkouts} toast={msg=>setToast(msg)}/>}
       <div style={{textAlign:"center",padding:"28px 20px 40px",fontFamily:"'Press Start 2P',monospace",fontSize:"7px",color:"var(--border2)",lineHeight:2.5}}>
-        IRON QUEST v2.0 · SAVING TO LOCAL SCROLL<br/><span style={{opacity:0.5}}>NO SKIPPING LEG DAY. THIS IS LAW.</span>
+        SWEAT.EXE v2.0 · SAVING TO LOCAL SCROLL<br/><span style={{opacity:0.5}}>NO SKIPPING LEG DAY. THIS IS LAW.</span>
       </div>
       {toast&&<Toast msg={toast} onClose={()=>setToast(null)}/>}
     </div>
